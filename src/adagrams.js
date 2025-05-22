@@ -34,8 +34,10 @@ const LETTER_VALUE = {
   Y: 4, Z: 10
 };
 
+//TC: O(n) n: total number of letters in the pile; 
+//SC: O(n)
 export const drawLetters = () => {
-  // generate a pile of letters
+  // generate a pile of letters from letter_pool
   let letters = []
   Object.entries(LETTER_POOL).forEach(([key, value]) => {
     for (let i = 0; i < value; i++) {
@@ -52,26 +54,28 @@ export const drawLetters = () => {
 
   return hand;
 };
-// helper function: randomly pick one letter from letters pile, return the letter
+// helper func: randomly pick one letter from letters pile, return the letter
+//TC: O(1); SC: O(1)
 const drawOneLetter = (letters) => {
     const num = letters.length;
-    const index = Math.floor(Math.random()*num)
-    //swap with last element in arr to optimize time complexity
+    const index = Math.floor(Math.random()*num) //random num from [0, num-1]
+    //swap with last element in arr and then pop from end of arr
     const temp = letters[index];
     letters[index] = letters[num - 1];
     letters[num - 1] = temp;
     return letters.pop();
 };
-
+//m is the size of letterInHand
+// TC: O(m) or O(1): all input have a length of 10 or smaller, two loops have a TC of O(10) which can also be considered as constant.
+//SC: O(m) or O(1): letterMap has a size of 10 or smaller;
 export const usesAvailableLetters = (input, lettersInHand) => {
-  // Implement this method for wave 2
   // assume all letters are uppercase
   // check length of input word
   if(input.length > lettersInHand.length) {
     return false;
   };
   // build a dict for letters in hand
-  let letterMap = {}
+  const letterMap = {}
   lettersInHand.forEach((letter) => {
     if (!letterMap[letter]) {
       letterMap[letter] = 0;
@@ -88,8 +92,9 @@ export const usesAvailableLetters = (input, lettersInHand) => {
   return true;
 };
 
+//TC: O(m): m is the length of word (it is <= 10), so we can also say TC is O(1) given m is really small; 
+//SC: O(1)
 export const scoreWord = (word) => {
-  // Implement this method for wave 3
   //define LETTER_VALUE as a global variable (top of file)
   // iterate through word to add up all values
   let score = 0;
@@ -103,18 +108,13 @@ export const scoreWord = (word) => {
   return score;
 };
 
+//TC: O(k): k is the number of words in the words list;
+//SC: O(k): worst case if all words are tie;
 export const highestScoreFrom = (words) => {
-  // get score for each word and store word: score as key-value pairs in an object
-  // find topScore with the iteration
-  const scores = {};
-  let topScore = 0;
-  words.forEach((word) => {
-    const score = scoreWord(word);
-    scores[word] = score;
-    if (score > topScore) {
-      topScore = score;
-    };      
-  });
+  //build a word-score map
+  const scores = buildScoresMap(words);
+  //get topScore
+  const topScore = getTopScore(scores);  
   //iterate through the key-value pairs to get the all words with highest score, add to an array
   let topWords = [];
   Object.entries(scores).forEach(([word, score]) => {
@@ -122,21 +122,46 @@ export const highestScoreFrom = (words) => {
       topWords.push(word);
     }
   });
-  //iterate array, check if word.length == 10, if yes, return; if not, compare with min_length; return word with min length;
+  //get topWord using helper
+  const topWord = findTopWord(topWords);
+  
+  return {
+    'word': topWord,
+    'score': topScore
+  };  
+};
+
+//helper func:get score for each word and store word: score as key-value pairs in an object
+const buildScoresMap = (words) => {
+  const scores = {};
+  words.forEach((word) => {
+    scores[word] = scoreWord(word);
+  });
+  return scores;
+}
+
+//helper func: get topScore
+const getTopScore= (scores) => {
+  let topScore = 0;
+  Object.values(scores).forEach((score) => {
+    if (score > topScore) {
+      topScore = score;
+    };    
+  });
+  return topScore;
+}
+// helper func: find topWord from a list of topWords
+//iterate array, check if word.length == 10, if yes, return; if not, compare with min_length; return word with min length;
+const findTopWord = (topWords) => {
   let topWord = topWords[0];
+
   for (const word of topWords) {
     if (word.length === 10) {
-      return {
-        'word': word,
-        'score': topScore
-      };
+      return word;
     };
     if (word.length < topWord.length) {
       topWord = word;
     };
   };
-  return {
-    'word': topWord,
-    'score': topScore
-  };
+  return topWord;
 };
