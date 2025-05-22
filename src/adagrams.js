@@ -104,5 +104,39 @@ export const scoreWord = (word) => {
 };
 
 export const highestScoreFrom = (words) => {
-  // Implement this method for wave 4
+  // get score for each word and store word: score as key-value pairs in an object
+  // find topScore with the iteration
+  const scores = {};
+  let topScore = 0;
+  words.forEach((word) => {
+    const score = scoreWord(word);
+    scores[word] = score;
+    if (score > topScore) {
+      topScore = score;
+    };      
+  });
+  //iterate through the key-value pairs to get the all words with highest score, add to an array
+  let topWords = [];
+  Object.entries(scores).forEach(([word, score]) => {
+    if (score === topScore) {
+      topWords.push(word);
+    }
+  });
+  //iterate array, check if word.length == 10, if yes, return; if not, compare with min_length; return word with min length;
+  let topWord = topWords[0];
+  for (const word of topWords) {
+    if (word.length === 10) {
+      return {
+        'word': word,
+        'score': topScore
+      };
+    };
+    if (word.length < topWord.length) {
+      topWord = word;
+    };
+  };
+  return {
+    'word': topWord,
+    'score': topScore
+  };
 };
